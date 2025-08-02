@@ -6,6 +6,6 @@ from mockData import Library
 app = FastAPI()
 booksAvailable = Library.getInventory()
 
-@app.get("/")
+@app.get("/books")
 async def first_call():
     return booksAvailable
