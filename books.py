@@ -7,5 +7,11 @@ app = FastAPI()
 booksAvailable = Library.getInventory()
 
 @app.get("/books")
-async def first_call():
+async def getAllBooks():
     return booksAvailable
+
+@app.get("/books/{title}")
+async def getBookByTitle(title):
+    return [book for book in booksAvailable if (book.get("title").casefold() == title.casefold())]
+        
+         
