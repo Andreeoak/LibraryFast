@@ -1,4 +1,4 @@
-from fastapi import Body, FastAPI, Query
+from fastapi import Body, FastAPI, Query, HTTPException
 from mockData import Library
 from ibook  import NewBook, Book, PartialBookUpdate
 from bson import ObjectId
@@ -48,4 +48,12 @@ async def updateBookById(update_data: PartialBookUpdate = Body(...), id:str = Qu
             updated_book.update(update_fields)
             books_available[i] = updated_book
             return {"message": "Book updated", "book": updated_book}
-    return {"message": "Book not found"}
+    raise HTTPException(status_code=404, detail=f"No book found with ID {id}")
+
+@app.delete("/books/delete/{book_id}")
+async def deleteBookByID(book_id:str):
+    for i, book in enumerate(books_available):
+        if book.get("_id") == book_id:
+            books_available.pop(i)
+            return {"message": f"Book with ID {book_id} deleted successfully"}
+    raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
