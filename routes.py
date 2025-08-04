@@ -1,10 +1,9 @@
-from fastapi import Body, FastAPI, Query, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from Database.mockData import Library
 from Interfaces.ibook  import NewBook, Book, PartialBookUpdate
 from Utils.validationRules import validateObjectId
 from bson import ObjectId
 from typing import Optional
-from bson import ObjectId
 
 # python -m uvicorn books:app --reload  //development: dont use --reload on prod and aways specify the --host 
 
