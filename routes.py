@@ -1,8 +1,10 @@
 from fastapi import Body, FastAPI, Query, HTTPException
-from mockData import Library
-from ibook  import NewBook, Book, PartialBookUpdate
+from Database.mockData import Library
+from Interfaces.ibook  import NewBook, Book, PartialBookUpdate
+from Utils.validationRules import validateObjectId
 from bson import ObjectId
 from typing import Optional
+from bson import ObjectId
 
 # python -m uvicorn books:app --reload  //development: dont use --reload on prod and aways specify the --host 
 
@@ -35,7 +37,6 @@ async def getBooksByFilter(
 
     return results
         
-
     
 @app.post("/books/create/")
 async def createNewBook(new_book: NewBook = Body()):
@@ -46,6 +47,7 @@ async def createNewBook(new_book: NewBook = Body()):
     
 @app.put("/books/{book_id}/update/")
 async def updateBookById( book_id:str, update_data: PartialBookUpdate = Body(...)):
+    book_id = validateObjectId(book_id)
     for i, book in enumerate(books_available):
         if book.get("_id") == book_id:
             # Merge fields: only update what's provided
@@ -56,8 +58,10 @@ async def updateBookById( book_id:str, update_data: PartialBookUpdate = Body(...
             return {"message": "Book updated", "book": updated_book}
     raise HTTPException(status_code=404, detail=f"No book found with ID {id}")
 
+
 @app.delete("/books/{book_id}/delete/")
 async def deleteBookByID(book_id:str):
+    book_id = validateObjectId(book_id)
     for i, book in enumerate(books_available):
         if book.get("_id") == book_id:
             books_available.pop(i)

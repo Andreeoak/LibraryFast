@@ -1,5 +1,13 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
+from bson import ObjectId
+
+def isValidObjectId(id_str: str) -> bool:
+    try:
+        ObjectId(id_str)
+        return True
+    except Exception:
+        return False
 
 # Missing/extra/invalid field	Auto 422 response from FastAPI
 
@@ -13,6 +21,12 @@ class NewBook(BaseModel):
 # Book model including generated id
 class Book(NewBook):
     id: str
+    @field_validator("id")
+    @classmethod
+    def validateObjectId(cls, id: str) ->str:
+        if not ObjectId.is_valid(id):
+            raise ValueError("Invalid ObjectId format")
+        return id
     
 class PartialBookUpdate(BaseModel):
     title: Optional[str] = None
