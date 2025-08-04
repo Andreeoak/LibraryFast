@@ -2,6 +2,7 @@ from fastapi import Body, FastAPI, Query, HTTPException
 from mockData import Library
 from ibook  import NewBook, Book, PartialBookUpdate
 from bson import ObjectId
+from typing import Optional
 
 # python -m uvicorn books:app --reload  //development: dont use --reload on prod and aways specify the --host 
 
@@ -13,23 +14,33 @@ books_available = Library.getInventory()
 async def getAllBooks():
     return books_available
 
-@app.get("/books/{title}")
-async def getBookByTitle(title: str): 
-    return [book for book in books_available if (book.get("title").casefold() == title.casefold())]
+# Endpoint for filtered book search
+@app.get("/books")
+async def getBooksByFilter(
+    title: Optional[str] = None,
+    category: Optional[str] = None,
+    author: Optional[str] = None,
+    min_rating: Optional[int] = None,
+    max_rating: Optional[int] = None
+):
+    # Start with all books
+    results = books_available
+
+    # Apply filters dynamically
+    if title:
+        results = [book for book in results if book.get("title").casefold() == title.casefold()]
+    if category:
+        results = [book for book in results if book.get("category").casefold() == category.casefold()]
+    if author:
+        results = [book for book in results if book.get("author").casefold() == author.casefold()]
+    if min_rating is not None:
+        results = [book for book in results if book.get("ratings") >= min_rating]
+    if max_rating is not None:
+        results = [book for book in results if book.get("ratings") <= max_rating]
+
+    return results
         
 
-@app.get("/books/")
-async def getBooksByCategory(category: str):
-    return [book for book in books_available if(book.get("category").casefold() == category.casefold())]
-
-
-@app.get("/books/{book_author}/")
-async def getBooksByCategoryFromAuthor(book_author:str, category:str):
-    return [book for book in books_available 
-            if(book.get("category").casefold() == category.casefold()
-               and
-               book.get("author").casefold() == book_author.casefold())
-            ]
     
 @app.post("/books/create/")
 async def createNewBook(new_book: NewBook = Body()):
@@ -38,10 +49,10 @@ async def createNewBook(new_book: NewBook = Body()):
     return {"message": "Book created", "book": new_book}
     
     
-@app.put("/books/update/")
-async def updateBookById(update_data: PartialBookUpdate = Body(...), id:str = Query(...)):
+@app.put("/books/{book_id}/update/")
+async def updateBookById( book_id:str, update_data: PartialBookUpdate = Body(...)):
     for i, book in enumerate(books_available):
-        if book.get("_id") == id:
+        if book.get("_id") == book_id:
             # Merge fields: only update what's provided
             updated_book = book.copy()
             update_fields = update_data.model_dump(exclude_unset=True)
@@ -50,7 +61,7 @@ async def updateBookById(update_data: PartialBookUpdate = Body(...), id:str = Qu
             return {"message": "Book updated", "book": updated_book}
     raise HTTPException(status_code=404, detail=f"No book found with ID {id}")
 
-@app.delete("/books/delete/{book_id}")
+@app.delete("/books/{book_id}/delete/")
 async def deleteBookByID(book_id:str):
     for i, book in enumerate(books_available):
         if book.get("_id") == book_id:
