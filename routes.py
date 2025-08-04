@@ -35,7 +35,13 @@ async def getBooksByFilter(
         results = [book for book in results if book.get("ratings") <= max_rating]
 
     return results
-        
+ 
+@app.get("/books/{book_id}")    
+async def getBookById(book_id:str):
+    for book in books_available:
+        if book.get("_id") == book_id:
+            return book
+    raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
     
 @app.post("/books/create/")
 async def createNewBook(new_book: NewBook = Body()):
@@ -55,7 +61,7 @@ async def updateBookById( book_id:str, update_data: PartialBookUpdate = Body(...
             updated_book.update(update_fields)
             books_available[i] = updated_book
             return {"message": "Book updated", "book": updated_book}
-    raise HTTPException(status_code=404, detail=f"No book found with ID {id}")
+    raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
 
 
 @app.delete("/books/{book_id}/delete/")

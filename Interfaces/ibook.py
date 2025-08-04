@@ -8,8 +8,20 @@ class NewBook(BaseModel):
     title: str = Field(min_length=3)
     author: str = Field(min_length=1)
     category: str = Field(min_length=3)
-    description: str = Field(min_lenght=5, max_length=100)
-    rating: int = Field(gt=-1, lt=6)
+    description: str = Field(min_length=5, max_length=100)
+    ratings: int = Field(gt=-1, lt=6)
+    
+    model_config ={
+        "json_schema_extra":{
+            "example": {
+                "title": "Ulysses",
+                "author": "James Joyce",
+                "category": "Romance",
+                "description": "A day in the life of Leopold Bloom.",
+                "ratings": 5
+            }
+        }
+    }
     
 # Book model including generated id
 class Book(NewBook):
@@ -26,5 +38,5 @@ class PartialBookUpdate(BaseModel):
     author: Optional[str] = None
     category: Optional[str] = None
     description: Optional[str] = None
-    rating: Optional[int] = None
+    ratings: Optional[int] = None
     
