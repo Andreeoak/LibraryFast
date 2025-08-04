@@ -11,11 +11,6 @@ books_available = Library.getInventory()
 
 
 @app.get("/books")
-async def getAllBooks():
-    return books_available
-
-# Endpoint for filtered book search
-@app.get("/books")
 async def getBooksByFilter(
     title: Optional[str] = None,
     category: Optional[str] = None,
