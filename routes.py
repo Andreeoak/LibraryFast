@@ -4,14 +4,15 @@ from Interfaces.ibook  import NewBook, Book, PartialBookUpdate
 from Utils.validationRules import validateObjectId
 from bson import ObjectId
 from typing import Optional
+from starlette import status
 
-# python -m uvicorn books:app --reload  //development: dont use --reload on prod and aways specify the --host 
+# python -m uvicorn routes:app --reload  //development: dont use --reload on prod and aways specify the --host 
 
 app = FastAPI()
 books_available = Library.getInventory()
 
 
-@app.get("/books")
+@app.get("/books", status_code=status.HTTP_200_OK)
 async def getBooksByFilter(
     title: Optional[str] = None,
     category: Optional[str] = None,
@@ -36,21 +37,22 @@ async def getBooksByFilter(
 
     return results
  
-@app.get("/books/{book_id}")    
+@app.get("/books/{book_id}", status_code=status.HTTP_200_OK)    
 async def getBookById(book_id:str):
     for book in books_available:
         if book.get("_id") == book_id:
             return book
     raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
     
-@app.post("/books/create/")
+@app.post("/books/create/", status_code=status.HTTP_201_CREATED)
 async def createNewBook(new_book: NewBook = Body()):
-    new_book = Book(**new_book.model_dump(), id=str(ObjectId())) # Generate unique ID (24-character hexadecimal string - ready for mongoDB)
-    books_available.append(new_book)
-    return {"message": "Book created", "book": new_book}
+    book_dict = new_book.model_dump()  
+    book_dict["_id"] = str(ObjectId())  
+    books_available.append(book_dict)   
+    return {"message": "Book created", "book": book_dict}
     
     
-@app.put("/books/{book_id}/update/")
+@app.put("/books/{book_id}/update/", status_code=status.HTTP_204_NO_CONTENT)
 async def updateBookById( book_id:str, update_data: PartialBookUpdate = Body(...)):
     book_id = validateObjectId(book_id)
     for i, book in enumerate(books_available):
@@ -64,7 +66,7 @@ async def updateBookById( book_id:str, update_data: PartialBookUpdate = Body(...
     raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
 
 
-@app.delete("/books/{book_id}/delete/")
+@app.delete("/books/{book_id}/delete/", status_code=status.HTTP_204_NO_CONTENT)
 async def deleteBookByID(book_id:str):
     book_id = validateObjectId(book_id)
     for i, book in enumerate(books_available):
