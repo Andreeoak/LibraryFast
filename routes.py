@@ -39,10 +39,10 @@ async def getBooksByFilter(
  
 @app.get("/books/{book_id}", status_code=status.HTTP_200_OK)    
 async def getBookById(book_id:str):
-    for book in books_available:
-        if book.get("_id") == book_id:
-            return book
-    raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
+    book = books_by_id_dict.get(book_id)  #for O(1) reads
+    if not book:
+        raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
+    return book
     
 @app.post("/books/create/", status_code=status.HTTP_201_CREATED)
 async def createNewBook(new_book: NewBook = Body(...)):
