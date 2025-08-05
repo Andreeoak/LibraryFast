@@ -10,7 +10,7 @@ from starlette import status
 
 app = FastAPI()
 books_available = Library.getInventory()
-
+books_by_id_dict = {book.get("_id"): book for book in books_available}
 
 @app.get("/books", status_code=status.HTTP_200_OK)
 async def getBooksByFilter(
@@ -45,7 +45,7 @@ async def getBookById(book_id:str):
     raise HTTPException(status_code=404, detail=f"No book found with ID {book_id}")
     
 @app.post("/books/create/", status_code=status.HTTP_201_CREATED)
-async def createNewBook(new_book: NewBook = Body()):
+async def createNewBook(new_book: NewBook = Body(...)):
     book_dict = new_book.model_dump()  
     book_dict["_id"] = str(ObjectId())  
     books_available.append(book_dict)   

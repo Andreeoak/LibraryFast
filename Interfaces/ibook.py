@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from typing import Optional, Literal
 from bson import ObjectId
 
 # Missing/extra/invalid field	Auto 422 response from FastAPI
@@ -7,7 +7,7 @@ from bson import ObjectId
 class NewBook(BaseModel):
     title: str = Field(min_length=3)
     author: str = Field(min_length=1)
-    category: str = Field(min_length=3)
+    category: Literal["Science Fiction", "Fantasy", "Historical Fiction", "Technology", "Mystery", "Romance"] = Field(min_length=3)
     description: str = Field(min_length=5, max_length=100)
     ratings: int = Field(gt=-1, lt=6)
     
