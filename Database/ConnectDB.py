@@ -5,7 +5,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import pymongo.errors
 
-def get_database():
+def getDatabase():
     """
     Establishes a connection to the MongoDB database and returns the database object.
     Loads environment variables from env/config/.env.
@@ -41,9 +41,16 @@ def get_database():
         print(f"Configuration error: {e}")
         raise
 
-def get_collection():
+def getCollection():
     """
     Returns the collection from the database.
     """
-    db = get_database()
+    db = getDatabase()
     return db["BooksCollection"]
+
+def close_connection():
+    global client
+    if client is not None:
+        client.close()
+        client = None
+        print("MongoDB connection closed")
