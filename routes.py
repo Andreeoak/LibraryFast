@@ -36,12 +36,14 @@ async def getBooksByFilter(
         query["category"] = {"$regex": category, "$options": "i"}
     if author:
         query["author"] = {"$regex": author, "$options": "i"}
+        
+    ratings_filter = {}
     if min_rating is not None:
-        query["ratings"] = query.get("ratings", {})
-        query["ratings"]["$gte"] = min_rating
+        ratings_filter["$gte"] = min_rating
     if max_rating is not None:
-        query["ratings"] = query.get("ratings", {})
-        query["ratings"]["$lte"] = max_rating
+        ratings_filter["$lte"] = max_rating
+    if ratings_filter:
+        query["ratings"] = ratings_filter
 
     # Execute the query
     books = list(collection.find(query))
